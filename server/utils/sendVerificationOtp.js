@@ -1,12 +1,21 @@
-import { transporter } from "../configs/nodemailer.config.js";
+import SibApiV3Sdk from "@sendinblue/client";
+
+const brevo = new SibApiV3Sdk.TransactionalEmailsApi();
+brevo.setApiKey(
+  SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY
+);
 
 export const sendVerificationOtp = async (email, otp) => {
   try {
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      to: email,
+    const emailData = {
+      sender: {
+        email: process.env.EMAIL_FROM, // must be verified in Brevo
+        name: "SPass Verification",
+      },
+      to: [{ email }],
       subject: "Your OTP Code for Verification",
-      html: `
+      htmlContent: `
         <div style="font-family: Arial, sans-serif; background:#f9f9f9; padding:20px;">
           <div style="max-width:500px; margin:auto; background:white; padding:20px; border-radius:10px; border:1px solid #eee;">
             <h2 style="text-align:center; color:#ff6500;">Email Verification</h2>
@@ -23,8 +32,10 @@ export const sendVerificationOtp = async (email, otp) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
+    await brevo.sendTransacEmail(emailData);
+    console.log(`📧 OTP email sent successfully to ${email}`);
   } catch (error) {
+    console.error("❌ Failed to send OTP email:", error.message);
     throw new Error("Unable to send OTP email");
   }
 };

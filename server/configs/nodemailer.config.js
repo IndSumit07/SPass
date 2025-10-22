@@ -1,19 +1,21 @@
-import nodemailer from "nodemailer";
+import SibApiV3Sdk from "@sendinblue/client";
 
-export const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587, // TLS port
-  secure: false, // use TLS
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-});
+const brevo = new SibApiV3Sdk.TransactionalEmailsApi();
+brevo.setApiKey(
+  SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY
+);
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ Brevo SMTP connection failed:", error);
-  } else {
-    console.log("✅ Brevo SMTP server ready to send emails");
+export const sendEmail = async ({ to, subject, htmlContent }) => {
+  try {
+    await brevo.sendTransacEmail({
+      sender: { email: "yourverifiedemail@domain.com", name: "Your App" },
+      to: [{ email: to }],
+      subject,
+      htmlContent,
+    });
+    console.log("✅ Email sent successfully!");
+  } catch (err) {
+    console.error("❌ Failed to send email:", err);
   }
-});
+};
