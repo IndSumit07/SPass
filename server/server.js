@@ -8,7 +8,12 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 connectDB();
 
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: ["https://spass-three.vercel.app", "http://localhost:5173"],
+  })
+);
 app.use(express.json());
 
 app.get("/", (req, res) => {
