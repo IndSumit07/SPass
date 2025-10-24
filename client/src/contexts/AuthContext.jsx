@@ -135,6 +135,7 @@ export const AuthContext = ({ children }) => {
     register,
     verifyAccount,
     loading,
+    setLoading,
     login,
     user,
     logout,

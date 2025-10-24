@@ -9,6 +9,9 @@ import BottomNavbar from "./components/BottomNavbar";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import VerifyOtp from "./pages/VerifyOtp";
+import PublicRoute from "./components/PublicRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Events from "./pages/Events";
 const App = () => {
   const location = useLocation();
 
@@ -20,12 +23,62 @@ const App = () => {
       <ToastContainer />
       {!isNavbarHidden && <TopNavbar />}
       <Routes>
-        <Route path="/" element={<Start />} />
-        <Route path="/sign-in" element={<SignIn />} />
-        <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/home" element={<Homepage />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <Start />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/sign-in"
+          element={
+            <PublicRoute>
+              <SignIn />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/sign-up"
+          element={
+            <PublicRoute>
+              <SignUp />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/verify-otp"
+          element={
+            <PublicRoute>
+              <VerifyOtp />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Homepage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events"
+          element={
+            <ProtectedRoute>
+              <Events />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
       {!isNavbarHidden && <BottomNavbar />}
     </>
