@@ -71,6 +71,7 @@ const Profile = () => {
 
   // Format date for display
   const formatDate = (dateString) => {
+    if (!dateString) return "TBD";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -81,6 +82,7 @@ const Profile = () => {
 
   // Format time for display
   const formatTime = (dateString) => {
+    if (!dateString) return "TBD";
     const date = new Date(dateString);
     return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
@@ -114,25 +116,37 @@ const Profile = () => {
 
     setFormLoading(true);
     try {
-      // Create form data object with all required fields
+      // Create properly formatted event data
       const eventData = {
-        eventName: form.eventName,
-        description: form.description,
+        eventName: form.eventName.trim(),
+        description: form.description.trim(),
         startDate: form.startDate,
         endDate: form.endDate,
-        locationName: form.locationName,
-        locationAddress: form.locationAddress,
-        venue: form.venue,
-        organisationName: form.organisationName,
-        capacity: parseInt(form.capacity) || 0,
+        locationName: form.locationName.trim(),
+        locationAddress: form.locationAddress.trim(),
+        venue: form.venue.trim(),
+        organisationName: form.organisationName.trim(),
+        capacity: form.capacity ? parseInt(form.capacity) : 0,
         isRegistrationOpen: form.isRegistrationOpen,
         status: form.status,
         ticketType: form.ticketType,
         ticketPrice:
           form.ticketType === "Paid" ? parseFloat(form.ticketPrice) : 0,
-        registrationDeadline: form.registrationDeadline,
+        registrationDeadline: form.registrationDeadline || null,
         coverImage: form.coverImage,
       };
+
+      // Validate required fields
+      if (
+        !eventData.eventName ||
+        !eventData.organisationName ||
+        !eventData.startDate ||
+        !eventData.endDate
+      ) {
+        toast.error("Please fill in all required fields");
+        setFormLoading(false);
+        return;
+      }
 
       await createEvent(eventData);
       setShowForm(false);
@@ -155,6 +169,7 @@ const Profile = () => {
       });
     } catch (error) {
       console.error("Error creating event:", error);
+      toast.error("Failed to create event. Please try again.");
     } finally {
       setFormLoading(false);
     }

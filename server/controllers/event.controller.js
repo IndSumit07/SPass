@@ -36,16 +36,18 @@ export const createEvent = async (req, res) => {
       isRegistrationOpen,
     } = req.body;
 
-    if (!eventName || !organisationName || !ticketType) {
-      return res.json({
+    // Validate required fields
+    if (!eventName || !organisationName || !startDate || !endDate) {
+      return res.status(400).json({
         success: false,
-        message: "All required fields must be filled!",
+        message:
+          "Event name, organization, start date, and end date are required!",
       });
     }
 
     const user = req.user;
     if (!user) {
-      return res.json({
+      return res.status(401).json({
         success: false,
         message: "Unauthorized, please login to create event",
       });
@@ -54,11 +56,54 @@ export const createEvent = async (req, res) => {
     let coverImageUrl = null;
 
     if (req.files?.coverImage) {
-      coverImageUrl = await uploadToCloudinary(
-        req.files.coverImage[0].buffer,
-        "events/cover"
-      );
+      try {
+        coverImageUrl = await uploadToCloudinary(
+          req.files.coverImage[0].buffer,
+          "events/cover"
+        );
+      } catch (uploadError) {
+        console.error("Cloudinary upload error:", uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload cover image",
+        });
+      }
     }
+
+    // Parse and validate dates
+    const parsedStartDate = new Date(startDate);
+    const parsedEndDate = new Date(endDate);
+    const parsedRegistrationDeadline = registrationDeadline
+      ? new Date(registrationDeadline)
+      : null;
+
+    if (isNaN(parsedStartDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid start date",
+      });
+    }
+
+    if (isNaN(parsedEndDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid end date",
+      });
+    }
+
+    if (
+      parsedRegistrationDeadline &&
+      isNaN(parsedRegistrationDeadline.getTime())
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid registration deadline date",
+      });
+    }
+
+    // Parse numeric fields
+    const parsedCapacity = capacity ? parseInt(capacity) : 0;
+    const parsedTicketPrice = ticketPrice ? parseFloat(ticketPrice) : 0;
 
     const location = {
       name: locationName || "",
@@ -66,31 +111,42 @@ export const createEvent = async (req, res) => {
     };
 
     const event = await Event.create({
-      eventName,
-      description,
-      startDate,
-      endDate,
+      eventName: eventName.trim(),
+      description: description?.trim() || "",
+      startDate: parsedStartDate,
+      endDate: parsedEndDate,
       location,
-      venue,
-      organisationName,
-      capacity,
-      status,
-      ticketPrice,
-      ticketType,
-      registrationDeadline,
-      isRegistrationOpen,
+      venue: venue?.trim() || "",
+      organisationName: organisationName.trim(),
+      capacity: parsedCapacity,
+      status: status || "draft",
+      ticketPrice: parsedTicketPrice,
+      ticketType: ticketType || "Free",
+      registrationDeadline: parsedRegistrationDeadline,
+      isRegistrationOpen:
+        isRegistrationOpen === "true" || isRegistrationOpen === true,
       coverImage: coverImageUrl,
       createdBy: user._id,
     });
 
-    return res.json({
+    return res.status(201).json({
       success: true,
       message: "Event created successfully",
       event,
     });
   } catch (error) {
     console.error("Error creating event:", error);
-    return res.json({
+
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors,
+      });
+    }
+
+    return res.status(500).json({
       success: false,
       message: "Server Error",
       error: error.message,
@@ -118,7 +174,7 @@ export const getAllEvents = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching all events:", error);
-    return res.json({
+    return res.status(500).json({
       success: false,
       message: "Server Error",
       error: error.message,
@@ -131,7 +187,7 @@ export const getUserEvents = async (req, res) => {
     const user = req.user;
 
     if (!user) {
-      return res.json({
+      return res.status(401).json({
         success: false,
         message: "Unauthorized, please login to view your events",
       });
@@ -142,7 +198,7 @@ export const getUserEvents = async (req, res) => {
     if (!events || events.length === 0) {
       return res.json({
         success: true,
-        message: "You haven’t created any events yet",
+        message: "You haven't created any events yet",
         events: [],
       });
     }
@@ -155,7 +211,7 @@ export const getUserEvents = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching user events:", error);
-    return res.json({
+    return res.status(500).json({
       success: false,
       message: "Server Error",
       error: error.message,

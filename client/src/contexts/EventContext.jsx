@@ -22,51 +22,51 @@ const EventContext = ({ children }) => {
   const { loading, setLoading, user } = useAuth();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("token");
-  // Create Event Function
   const navigate = useNavigate();
-  const createEvent = async (
-    eventName,
-    description,
-    startDate,
-    endDate,
-    locationName,
-    locationAddress,
-    venue,
-    organisationName,
-    capacity,
-    isRegistrationOpen,
-    status,
-    coverImage,
-    ticketType,
-    ticketPrice,
-    registrationDeadline
-  ) => {
+
+  // Create Event Function - Accepts object parameter
+  const createEvent = async (eventData) => {
     setLoading(true);
 
     try {
       const formData = new FormData();
 
-      // Append all fields
-      formData.append("eventName", eventName);
-      formData.append("description", description);
-      formData.append("startDate", startDate);
-      formData.append("endDate", endDate);
-      formData.append("locationName", locationName);
-      formData.append("locationAddress", locationAddress);
-      formData.append("venue", venue);
-      formData.append("organisationName", organisationName);
-      formData.append("capacity", capacity);
-      formData.append("isRegistrationOpen", isRegistrationOpen);
-      formData.append("status", status);
-      formData.append("ticketType", ticketType);
-      formData.append("ticketPrice", ticketPrice);
-      formData.append("registrationDeadline", registrationDeadline);
+      // Append all fields with proper type conversion
+      formData.append("eventName", eventData.eventName || "");
+      formData.append("description", eventData.description || "");
+      formData.append("startDate", eventData.startDate || "");
+      formData.append("endDate", eventData.endDate || "");
+      formData.append("locationName", eventData.locationName || "");
+      formData.append("locationAddress", eventData.locationAddress || "");
+      formData.append("venue", eventData.venue || "");
+      formData.append("organisationName", eventData.organisationName || "");
+      formData.append(
+        "capacity",
+        eventData.capacity ? Number(eventData.capacity) : 0
+      );
+      formData.append(
+        "isRegistrationOpen",
+        Boolean(eventData.isRegistrationOpen)
+      );
+      formData.append("status", eventData.status || "draft");
+      formData.append("ticketType", eventData.ticketType || "Free");
+      formData.append(
+        "ticketPrice",
+        eventData.ticketPrice ? Number(eventData.ticketPrice) : 0
+      );
+      formData.append(
+        "registrationDeadline",
+        eventData.registrationDeadline || ""
+      );
 
       // Append files if provided
-      if (coverImage) {
-        if (coverImage.size > 5 * 1024 * 1024)
-          return toast.error("Cover image must be under 5MB");
-        formData.append("coverImage", coverImage);
+      if (eventData.coverImage) {
+        if (eventData.coverImage.size > 5 * 1024 * 1024) {
+          toast.error("Cover image must be under 5MB");
+          setLoading(false);
+          return;
+        }
+        formData.append("coverImage", eventData.coverImage);
       }
 
       const { data } = await axios.post(
@@ -83,7 +83,9 @@ const EventContext = ({ children }) => {
       if (data.success) {
         toast.success(data.message || "Event created successfully!");
         navigate("/events");
-        location.reload();
+        // Don't reload the page, just refetch events
+        fetchAllEvents();
+        fetchUserEvents();
       } else {
         toast.error(data.message || "Failed to create event!");
       }
@@ -103,10 +105,9 @@ const EventContext = ({ children }) => {
       const { data } = await axios.get(backendUrl + "/api/events/all");
       if (data.success) {
         setAllEvents(data.events);
-        console.log(data.events);
       }
     } catch (error) {
-      console.log(error.message);
+      console.log("Error fetching events:", error.message);
     } finally {
       setLoading(false);
     }
@@ -115,6 +116,7 @@ const EventContext = ({ children }) => {
   const fetchUserEvents = async () => {
     setLoading(true);
     if (user?.role === "user") {
+      setLoading(false);
       return;
     }
     try {
@@ -125,10 +127,9 @@ const EventContext = ({ children }) => {
       });
       if (data.success) {
         setUserEvents(data.events);
-        console.log(data.events);
       }
     } catch (error) {
-      console.log(error.message);
+      console.log("Error fetching user events:", error.message);
     } finally {
       setLoading(false);
     }
@@ -144,6 +145,8 @@ const EventContext = ({ children }) => {
     loading,
     allEvents,
     userEvents,
+    fetchAllEvents,
+    fetchUserEvents,
   };
 
   return (

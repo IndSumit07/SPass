@@ -18,34 +18,62 @@ const passSchema = new mongoose.Schema({
 
 const eventSchema = new mongoose.Schema(
   {
-    eventName: { type: String, required: true },
-    description: { type: String, default: "" },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date },
+    eventName: {
+      type: String,
+      required: [true, "Event name is required"],
+      trim: true,
+    },
+    description: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    startDate: {
+      type: Date,
+      required: [true, "Start date is required"],
+    },
+    endDate: {
+      type: Date,
+      required: [true, "End date is required"],
+    },
     location: {
-      name: { type: String },
-      address: { type: String },
+      name: {
+        type: String,
+        trim: true,
+      },
+      address: {
+        type: String,
+        trim: true,
+      },
     },
     venue: {
       type: String,
+      trim: true,
     },
     organisationName: {
       type: String,
-      required: true,
+      required: [true, "Organization name is required"],
+      trim: true,
     },
-
     attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    capacity: { type: Number, min: 0 },
+    capacity: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
     isRegistrationOpen: {
       type: Boolean,
+      default: false,
     },
     status: {
       type: String,
-      enum: ["upcoming", "draft", "published", "ongoing", "completed"],
+      enum: ["draft", "published", "ongoing", "completed"],
       default: "draft",
     },
-    coverImage: { type: String, default: "" },
-
+    coverImage: {
+      type: String,
+      default: "",
+    },
     ticketType: {
       type: String,
       enum: ["Free", "Paid"],
@@ -53,9 +81,12 @@ const eventSchema = new mongoose.Schema(
     },
     ticketPrice: {
       type: Number,
+      min: 0,
       default: 0,
     },
-    registrationDeadline: { type: Date },
+    registrationDeadline: {
+      type: Date,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -79,10 +110,14 @@ const eventSchema = new mongoose.Schema(
         },
       ],
     },
-
     passes: [passSchema],
   },
   { timestamps: true }
 );
+
+// Add index for better performance
+eventSchema.index({ createdBy: 1 });
+eventSchema.index({ startDate: 1 });
+eventSchema.index({ status: 1 });
 
 export const Event = mongoose.model("Event", eventSchema);
