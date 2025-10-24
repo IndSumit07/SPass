@@ -37,7 +37,6 @@ const EventContext = ({ children }) => {
     isRegistrationOpen,
     status,
     coverImage,
-    logo,
     ticketType,
     ticketPrice,
     registrationDeadline
@@ -68,12 +67,6 @@ const EventContext = ({ children }) => {
         if (coverImage.size > 5 * 1024 * 1024)
           return toast.error("Cover image must be under 5MB");
         formData.append("coverImage", coverImage);
-      }
-
-      if (logo) {
-        if (logo.size > 2 * 1024 * 1024)
-          return toast.error("Logo must be under 2MB");
-        formData.append("logo", logo);
       }
 
       const { data } = await axios.post(

@@ -17,6 +17,7 @@ import {
   Trash2,
   Settings,
   BarChart3,
+  IndianRupee,
 } from "lucide-react";
 
 const Profile = () => {
@@ -24,6 +25,7 @@ const Profile = () => {
   const { user, loading, logout } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState("events");
+  const [formLoading, setFormLoading] = useState(false);
 
   const [form, setForm] = useState({
     eventName: "",
@@ -110,41 +112,52 @@ const Profile = () => {
       return;
     }
 
-    await createEvent(
-      form.eventName,
-      form.description,
-      form.startDate,
-      form.endDate,
-      form.locationName,
-      form.locationAddress,
-      form.venue,
-      form.organisationName,
-      form.capacity,
-      form.isRegistrationOpen,
-      form.status,
-      form.coverImage,
-      form.ticketType,
-      form.ticketPrice,
-      form.registrationDeadline
-    );
-    setShowForm(false);
-    setForm({
-      eventName: "",
-      description: "",
-      startDate: "",
-      endDate: "",
-      locationName: "",
-      locationAddress: "",
-      venue: "",
-      organisationName: "",
-      capacity: "",
-      isRegistrationOpen: true,
-      status: "draft",
-      ticketType: "Free",
-      ticketPrice: 0,
-      registrationDeadline: "",
-      coverImage: null,
-    });
+    setFormLoading(true);
+    try {
+      // Create form data object with all required fields
+      const eventData = {
+        eventName: form.eventName,
+        description: form.description,
+        startDate: form.startDate,
+        endDate: form.endDate,
+        locationName: form.locationName,
+        locationAddress: form.locationAddress,
+        venue: form.venue,
+        organisationName: form.organisationName,
+        capacity: parseInt(form.capacity) || 0,
+        isRegistrationOpen: form.isRegistrationOpen,
+        status: form.status,
+        ticketType: form.ticketType,
+        ticketPrice:
+          form.ticketType === "Paid" ? parseFloat(form.ticketPrice) : 0,
+        registrationDeadline: form.registrationDeadline,
+        coverImage: form.coverImage,
+      };
+
+      await createEvent(eventData);
+      setShowForm(false);
+      setForm({
+        eventName: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+        locationName: "",
+        locationAddress: "",
+        venue: "",
+        organisationName: "",
+        capacity: "",
+        isRegistrationOpen: true,
+        status: "draft",
+        ticketType: "Free",
+        ticketPrice: 0,
+        registrationDeadline: "",
+        coverImage: null,
+      });
+    } catch (error) {
+      console.error("Error creating event:", error);
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -330,6 +343,21 @@ const Profile = () => {
                       placeholder="Describe your event"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Venue *
+                    </label>
+                    <input
+                      type="text"
+                      name="venue"
+                      value={form.venue}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      placeholder="Event venue"
+                    />
+                  </div>
                 </div>
 
                 {/* Event Details */}
@@ -363,21 +391,6 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Venue *
-                    </label>
-                    <input
-                      type="text"
-                      name="venue"
-                      value={form.venue}
-                      onChange={handleChange}
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="Event venue"
-                    />
-                  </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -388,6 +401,7 @@ const Profile = () => {
                         name="capacity"
                         value={form.capacity}
                         onChange={handleChange}
+                        min="1"
                         className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         placeholder="Number of attendees"
                       />
@@ -409,50 +423,144 @@ const Profile = () => {
                       </select>
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Ticket Type
+                      </label>
+                      <select
+                        name="ticketType"
+                        value={form.ticketType}
+                        onChange={handleChange}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      >
+                        <option value="Free">Free</option>
+                        <option value="Paid">Paid</option>
+                      </select>
+                    </div>
+                    {form.ticketType === "Paid" && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Ticket Price (₹)
+                        </label>
+                        <div className="relative">
+                          <IndianRupee
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                            size={16}
+                          />
+                          <input
+                            type="number"
+                            name="ticketPrice"
+                            value={form.ticketPrice}
+                            onChange={handleChange}
+                            min="0"
+                            step="0.01"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Registration Deadline
+                    </label>
+                    <input
+                      type="datetime-local"
+                      name="registrationDeadline"
+                      value={form.registrationDeadline}
+                      onChange={handleChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      name="isRegistrationOpen"
+                      checked={form.isRegistrationOpen}
+                      onChange={handleChange}
+                      className="w-4 h-4 text-purple-500 bg-white/5 border-white/10 rounded focus:ring-purple-500 focus:ring-2"
+                    />
+                    <label className="text-sm font-medium text-gray-300">
+                      Registration Open
+                    </label>
+                  </div>
                 </div>
               </div>
 
-              {/* File Uploads */}
+              {/* Location Information */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Cover Image
+                    Location Name
                   </label>
-                  <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-purple-400/50 transition-colors bg-white/5">
-                    <input
-                      type="file"
-                      name="coverImage"
-                      accept="image/*"
-                      onChange={handleChange}
-                      className="hidden"
-                      id="coverImage"
-                    />
-                    <label
-                      htmlFor="coverImage"
-                      className="cursor-pointer flex flex-col items-center"
-                    >
-                      <Upload className="text-purple-400 mb-3" size={24} />
-                      <span className="text-gray-300 font-medium mb-1">
-                        Upload cover image
-                      </span>
-                      <span className="text-gray-400 text-sm mb-2">
-                        PNG, JPG, JPEG up to 10MB
-                      </span>
-                      <span className="text-purple-300 text-sm bg-purple-500/20 px-3 py-1 rounded-full">
-                        {getFileName(form.coverImage)}
-                      </span>
-                    </label>
-                  </div>
+                  <input
+                    type="text"
+                    name="locationName"
+                    value={form.locationName}
+                    onChange={handleChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Location name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Location Address
+                  </label>
+                  <input
+                    type="text"
+                    name="locationAddress"
+                    value={form.locationAddress}
+                    onChange={handleChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Full address"
+                  />
+                </div>
+              </div>
+
+              {/* File Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Cover Image
+                </label>
+                <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-purple-400/50 transition-colors bg-white/5">
+                  <input
+                    type="file"
+                    name="coverImage"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="hidden"
+                    id="coverImage"
+                  />
+                  <label
+                    htmlFor="coverImage"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+                    <Upload className="text-purple-400 mb-3" size={24} />
+                    <span className="text-gray-300 font-medium mb-1">
+                      Upload cover image
+                    </span>
+                    <span className="text-gray-400 text-sm mb-2">
+                      PNG, JPG, JPEG up to 10MB
+                    </span>
+                    <span className="text-purple-300 text-sm bg-purple-500/20 px-3 py-1 rounded-full">
+                      {getFileName(form.coverImage)}
+                    </span>
+                  </label>
                 </div>
               </div>
 
               <div className="flex justify-end pt-4">
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-lg font-medium hover:scale-105 transition-transform flex items-center gap-2 disabled:opacity-50"
+                  disabled={formLoading}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-lg font-medium hover:scale-105 transition-transform flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? (
+                  {formLoading ? (
                     <>
                       <Loader2 className="animate-spin" size={20} />
                       Creating Event...
