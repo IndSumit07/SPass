@@ -100,6 +100,9 @@ export const AuthContext = ({ children }) => {
       if (data.success) {
         setUser(data.user);
         console.log(data.user);
+      } else {
+        localStorage.removeItem("token");
+        navigate("/");
       }
     } catch (error) {
       toast.error(error.message);
