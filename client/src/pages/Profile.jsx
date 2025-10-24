@@ -41,7 +41,6 @@ const Profile = () => {
     ticketPrice: 0,
     registrationDeadline: "",
     coverImage: null,
-    logo: null,
   });
 
   const themeColors = {
@@ -124,7 +123,6 @@ const Profile = () => {
       form.isRegistrationOpen,
       form.status,
       form.coverImage,
-      form.logo,
       form.ticketType,
       form.ticketPrice,
       form.registrationDeadline
@@ -146,7 +144,6 @@ const Profile = () => {
       ticketPrice: 0,
       registrationDeadline: "",
       coverImage: null,
-      logo: null,
     });
   };
 
@@ -443,37 +440,6 @@ const Profile = () => {
                       </span>
                       <span className="text-purple-300 text-sm bg-purple-500/20 px-3 py-1 rounded-full">
                         {getFileName(form.coverImage)}
-                      </span>
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Event Logo
-                  </label>
-                  <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-pink-400/50 transition-colors bg-white/5">
-                    <input
-                      type="file"
-                      name="logo"
-                      accept="image/*"
-                      onChange={handleChange}
-                      className="hidden"
-                      id="logo"
-                    />
-                    <label
-                      htmlFor="logo"
-                      className="cursor-pointer flex flex-col items-center"
-                    >
-                      <Upload className="text-pink-400 mb-3" size={24} />
-                      <span className="text-gray-300 font-medium mb-1">
-                        Upload event logo
-                      </span>
-                      <span className="text-gray-400 text-sm mb-2">
-                        PNG, JPG, JPEG up to 5MB
-                      </span>
-                      <span className="text-pink-300 text-sm bg-pink-500/20 px-3 py-1 rounded-full">
-                        {getFileName(form.logo)}
                       </span>
                     </label>
                   </div>

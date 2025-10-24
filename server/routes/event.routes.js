@@ -11,10 +11,7 @@ const eventRouter = express.Router();
 eventRouter.post(
   "/create-event",
   authUser,
-  upload.fields([
-    { name: "coverImage", maxCount: 1 },
-    { name: "logo", maxCount: 1 },
-  ]),
+  upload.fields([{ name: "coverImage", maxCount: 1 }]),
   createEvent
 );
 

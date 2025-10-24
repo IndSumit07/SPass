@@ -45,10 +45,7 @@ const eventSchema = new mongoose.Schema(
       default: "draft",
     },
     coverImage: { type: String, default: "" },
-    logo: {
-      type: String,
-      default: "",
-    },
+
     ticketType: {
       type: String,
       enum: ["Free", "Paid"],

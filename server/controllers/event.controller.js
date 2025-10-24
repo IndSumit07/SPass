@@ -52,19 +52,11 @@ export const createEvent = async (req, res) => {
     }
 
     let coverImageUrl = null;
-    let logoUrl = null;
 
     if (req.files?.coverImage) {
       coverImageUrl = await uploadToCloudinary(
         req.files.coverImage[0].buffer,
         "events/cover"
-      );
-    }
-
-    if (req.files?.logo) {
-      logoUrl = await uploadToCloudinary(
-        req.files.logo[0].buffer,
-        "events/logo"
       );
     }
 
@@ -88,7 +80,6 @@ export const createEvent = async (req, res) => {
       registrationDeadline,
       isRegistrationOpen,
       coverImage: coverImageUrl,
-      logo: logoUrl,
       createdBy: user._id,
     });
 
