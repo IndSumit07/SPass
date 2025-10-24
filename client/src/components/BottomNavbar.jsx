@@ -18,7 +18,7 @@ const BottomNavbar = () => {
       </Link>
       <Link
         onClick={() => setActiveLink("Passes")}
-        to="/tickets"
+        to="/passes"
         className={`flex flex-col items-center ${
           activeLink === "Passes" ? "text-purple-400" : "text-gray-400"
         }`}

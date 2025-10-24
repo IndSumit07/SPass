@@ -12,6 +12,7 @@ import VerifyOtp from "./pages/VerifyOtp";
 import PublicRoute from "./components/PublicRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Events from "./pages/Events";
+import Passes from "./pages/Passes";
 const App = () => {
   const location = useLocation();
 
@@ -68,6 +69,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <Events />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/passes"
+          element={
+            <ProtectedRoute>
+              <Passes />
             </ProtectedRoute>
           }
         />

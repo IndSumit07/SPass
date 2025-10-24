@@ -8,14 +8,20 @@ import {
   Users,
   Phone,
   User,
+  QrCode,
+  Download,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useEvent } from "../contexts/EventContext";
+import { usePass } from "../contexts/PassContext";
 
 const Events = () => {
   const { user, loading } = useAuth();
   const { allEvents } = useEvent();
+  const { issuePass } = usePass();
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [issuedPass, setIssuedPass] = useState(null); // New state for storing issued pass
+  const [showPassPopup, setShowPassPopup] = useState(false); // New state for pass popup
 
   const themeColors = {
     gold: {
@@ -67,6 +73,36 @@ const Events = () => {
 
   const handleGetPass = (event) => setSelectedEvent(event);
   const closeTicket = () => setSelectedEvent(null);
+  const closePassPopup = () => {
+    setShowPassPopup(false);
+    setIssuedPass(null);
+  };
+
+  const issue = async (e) => {
+    e.preventDefault();
+    try {
+      const pass = await issuePass(selectedEvent._id);
+      if (pass) {
+        setIssuedPass(pass);
+        setShowPassPopup(true);
+        setSelectedEvent(null); // Close event modal
+      }
+    } catch (error) {
+      console.error("Error issuing pass:", error);
+    }
+  };
+
+  // Download pass as image
+  const downloadPass = () => {
+    if (issuedPass?.passImage) {
+      const link = document.createElement("a");
+      link.href = issuedPass.passImage;
+      link.download = `pass-${issuedPass.passId}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   if (loading) {
     return (
@@ -330,6 +366,7 @@ const Events = () => {
                 </p>
               </div>
               <button
+                onClick={issue}
                 className={`px-6 py-2 rounded-full bg-gradient-to-r ${
                   themeColors[
                     getEventTheme(
@@ -343,6 +380,198 @@ const Events = () => {
               >
                 {selectedEvent.ticketType === "Free" ? "Register" : "Buy Now"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPassPopup && issuedPass && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50 p-4 overflow-y-auto py-20">
+          <div className="relative bg-gradient-to-br from-[#1a0f2c] to-[#2d1b4e] backdrop-blur-xl border border-purple-500/30 rounded-2xl w-full max-w-5xl shadow-2xl mx-auto my-8 p-6 sm:p-8 top-[640px] ">
+            {/* Close Button */}
+            <button
+              onClick={closePassPopup}
+              className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-10 hover:bg-white/10 p-1 rounded-full"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Header */}
+            <div className="text-center mb-6 sm:mb-10">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
+                  <QrCode className="text-white" size={32} />
+                </div>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 bg-clip-text text-transparent mb-2">
+                🎉 Pass Created Successfully!
+              </h2>
+              <p className="text-gray-300 text-base sm:text-lg">
+                Your digital pass is ready for{" "}
+                <span className="text-purple-300 font-semibold">
+                  {issuedPass.eventName}
+                </span>
+              </p>
+            </div>
+
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8">
+              {/* Pass Image */}
+              <div className="flex flex-col items-center">
+                <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-2xl p-4 sm:p-6 border border-purple-500/20 shadow-2xl w-full">
+                  <div className="text-center mb-4">
+                    <h3 className="text-white font-bold text-lg sm:text-xl mb-1">
+                      Your Digital Pass
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      Show this at the event entrance
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
+                    <img
+                      src={issuedPass.passImage}
+                      alt="Digital Pass"
+                      className="w-full h-auto object-contain"
+                    />
+                  </div>
+                  <div className="text-center mt-4">
+                    <div className="inline-flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      <span className="text-purple-300 text-sm font-semibold">
+                        VALID PASS
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Details Section */}
+              <div className="space-y-6">
+                {/* Attendee Details */}
+                <div className="bg-gradient-to-br from-[#0f0820] to-[#1e1138] rounded-2xl p-5 sm:p-6 border border-purple-500/20 shadow-xl">
+                  <h3 className="text-white font-bold text-lg sm:text-xl mb-3 flex items-center gap-2">
+                    <User size={20} />
+                    Attendee Details
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-gray-400 text-sm mb-1">Full Name</p>
+                        <p className="text-white font-semibold">
+                          {issuedPass.userId.fullname}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-sm mb-1">Email</p>
+                        <p className="text-white font-medium text-sm break-all">
+                          {issuedPass.userId.email}
+                        </p>
+                      </div>
+                    </div>
+                    {issuedPass.seatNumber && (
+                      <div>
+                        <p className="text-gray-400 text-sm mb-1">
+                          Seat Assignment
+                        </p>
+                        <div className="bg-yellow-500/20 border border-yellow-500/30 px-3 py-2 rounded-lg text-center">
+                          <p className="text-yellow-400 font-bold">
+                            {issuedPass.seatNumber}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Event Details */}
+                <div className="bg-gradient-to-br from-[#0f0820] to-[#1e1138] rounded-2xl p-5 sm:p-6 border border-purple-500/20 shadow-xl">
+                  <h3 className="text-white font-bold text-lg sm:text-xl mb-3 flex items-center gap-2">
+                    <CalendarDays size={20} />
+                    Event Information
+                  </h3>
+                  <div className="space-y-3 text-sm sm:text-base">
+                    <div className="flex justify-between py-2 border-b border-white/10">
+                      <span className="text-gray-400">Event</span>
+                      <span className="text-white font-semibold text-right">
+                        {issuedPass.eventName}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-white/10">
+                      <span className="text-gray-400">Organizer</span>
+                      <span className="text-purple-300">
+                        {issuedPass.organisationName}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-white/10">
+                      <span className="text-gray-400">Date & Time</span>
+                      <div className="text-right">
+                        <p className="text-white">
+                          {formatDate(issuedPass.startDate)}
+                        </p>
+                        <p className="text-gray-400 text-sm">
+                          {formatTime(issuedPass.startDate)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-between py-2">
+                      <span className="text-gray-400">Venue</span>
+                      <span className="text-white text-right">
+                        {issuedPass.venue}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* QR Code */}
+                <div className="bg-gradient-to-br from-[#0f0820] to-[#1e1138] rounded-2xl p-5 sm:p-6 border border-purple-500/20 shadow-xl">
+                  <h3 className="text-white font-bold text-lg sm:text-xl mb-3 flex items-center gap-2">
+                    <QrCode size={20} />
+                    Quick Scan Code
+                  </h3>
+                  <div className="flex flex-col items-center">
+                    <div className="bg-white p-3 rounded-lg mb-3">
+                      <img
+                        src={issuedPass.qrCodeData}
+                        alt="QR Code"
+                        className="w-28 h-28 sm:w-32 sm:h-32"
+                      />
+                    </div>
+                    <p className="text-gray-400 text-sm text-center">
+                      Pass ID:{" "}
+                      <span className="text-purple-300 font-mono">
+                        {issuedPass.passId}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-6">
+              <button
+                onClick={downloadPass}
+                className="flex-1 flex items-center justify-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-purple-500/25 font-semibold text-base sm:text-lg"
+              >
+                <Download size={20} />
+                Download Pass
+              </button>
+              <button
+                onClick={closePassPopup}
+                className="flex-1 px-6 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all duration-200 border border-white/20 font-semibold text-base sm:text-lg hover:scale-105"
+              >
+                Close
+              </button>
+            </div>
+
+            {/* Hint */}
+            <div className="text-center mt-6 pt-6 border-t border-white/10">
+              <div className="inline-flex items-center gap-2 bg-blue-500/10 px-4 py-2 rounded-full border border-blue-500/20">
+                <span className="text-blue-400">💡</span>
+                <p className="text-blue-300 text-sm sm:text-base">
+                  Save this pass to your phone for quick access
+                </p>
+              </div>
             </div>
           </div>
         </div>

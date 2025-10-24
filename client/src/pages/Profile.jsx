@@ -515,7 +515,7 @@ const Profile = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 px-2 gap-6">
               {userEvents.map((event, index) => {
                 const theme = themeColors[getEventTheme(index)];
                 return (
@@ -524,7 +524,7 @@ const Profile = () => {
                     className={`${theme.card} border rounded-xl overflow-hidden hover:scale-105 transition-transform duration-200`}
                   >
                     {/* Event Header */}
-                    <div className="h-32 bg-gradient-to-r from-gray-800 to-gray-700 relative">
+                    <div className="h-48 bg-gradient-to-r from-gray-800 to-gray-700 relative">
                       {event.coverImage && (
                         <img
                           src={event.coverImage}

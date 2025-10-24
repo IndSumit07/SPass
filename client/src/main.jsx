@@ -4,12 +4,15 @@ import "./index.css";
 import App from "./App.jsx";
 import { AuthContext } from "./contexts/AuthContext.jsx";
 import EventContext from "./contexts/EventContext.jsx";
+import PassContext from "./contexts/PassContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthContext>
       <EventContext>
-        <App />
+        <PassContext>
+          <App />
+        </PassContext>
       </EventContext>
     </AuthContext>
   </BrowserRouter>

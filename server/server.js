@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./configs/mongodb.config.js";
 import authRouter from "./routes/auth.routes.js";
 import eventRouter from "./routes/event.routes.js";
+import passRouter from "./routes/pass.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -38,6 +39,7 @@ app.get("/", (req, res) => {
 });
 app.use("/api/auth", authRouter);
 app.use("/api/events", eventRouter);
+app.use("/api/passes", passRouter);
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
