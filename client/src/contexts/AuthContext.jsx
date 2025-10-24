@@ -102,6 +102,7 @@ export const AuthContext = ({ children }) => {
         console.log(data.user);
       } else {
         navigate("/");
+        location.reload();
       }
     } catch (error) {
       toast.error(error.message);

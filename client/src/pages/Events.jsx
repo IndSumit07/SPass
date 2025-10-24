@@ -23,7 +23,6 @@ const Events = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [issuedPass, setIssuedPass] = useState(null);
   const [showPassPopup, setShowPassPopup] = useState(false);
-  const location = useLocation();
 
   const themeColors = {
     gold: {

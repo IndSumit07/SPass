@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Create Event context
 const EventWalaContext = createContext();
@@ -22,6 +23,7 @@ const EventContext = ({ children }) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("token");
   // Create Event Function
+  const navigate = useNavigate();
   const createEvent = async (
     eventName,
     description,
@@ -87,6 +89,8 @@ const EventContext = ({ children }) => {
 
       if (data.success) {
         toast.success(data.message || "Event created successfully!");
+        navigate("/events");
+        location.reload();
       } else {
         toast.error(data.message || "Failed to create event!");
       }
