@@ -10,6 +10,6 @@ const passRouter = express.Router();
 
 passRouter.post("/issue", authUser, issuePass);
 passRouter.post("/scan", scanPass);
-passRouter.post("/user-passes", getUserPasses);
+passRouter.get("/user-passes", authUser, getUserPasses);
 
 export default passRouter;

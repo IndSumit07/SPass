@@ -166,7 +166,7 @@ export const scanPass = async (req, res) => {
 
 export const getUserPasses = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.user._id;
 
     const eventsWithPasses = await Event.find({
       "passes.userId": userId,
@@ -174,7 +174,7 @@ export const getUserPasses = async (req, res) => {
 
     const userPasses = eventsWithPasses.flatMap((event) =>
       event.passes
-        .filter((pass) => pass.userId._id.toString() === userId)
+        .filter((pass) => pass.userId._id.toString() === userId.toString()) // ✅ fixed
         .map((pass) => ({
           ...pass.toObject(),
           event: {

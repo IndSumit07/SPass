@@ -14,6 +14,7 @@ export const usePass = () => {
 };
 
 const PassContext = ({ children }) => {
+  const [passLoadingState, setPassLoadingState] = useState(false);
   const token = localStorage.getItem("token");
   const [userPasses, setUserPasses] = useState(null);
 
@@ -22,7 +23,7 @@ const PassContext = ({ children }) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const issuePass = async (eventId) => {
-    setLoading(true);
+    setPassLoadingState(true);
 
     try {
       const userId = user?._id;
@@ -53,19 +54,18 @@ const PassContext = ({ children }) => {
     } catch (error) {
       console.log(error.message);
     } finally {
-      setLoading(false);
+      setPassLoadingState(false);
     }
   };
 
   const getUserPasses = async () => {
-    setLoading(true);
+    setPassLoadingState(true);
     try {
-      const { data } = await axios.post(
-        backendUrl + "/api/passes/user-passes",
-        {
-          userId: user._id,
-        }
-      );
+      const { data } = await axios.get(backendUrl + "/api/passes/user-passes", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (data.success) {
         setUserPasses(data.passes);
@@ -76,15 +76,15 @@ const PassContext = ({ children }) => {
     } catch (error) {
       console.log(error.message);
     } finally {
-      setLoading(false);
+      setPassLoadingState(false);
     }
   };
 
   useEffect(() => {
     getUserPasses();
-  }, [user]);
+  }, []);
 
-  const value = { issuePass, userPasses };
+  const value = { issuePass, userPasses, passLoadingState };
   return (
     <PassWalaContext.Provider value={value}>
       {children}

@@ -15,8 +15,7 @@ import {
 } from "lucide-react";
 
 const Passes = () => {
-  const { userPasses } = usePass();
-  const { loading } = useAuth();
+  const { userPasses, passLoadingState } = usePass();
   const [selectedPass, setSelectedPass] = useState(null);
   const [showPassModal, setShowPassModal] = useState(false);
 
@@ -93,7 +92,7 @@ const Passes = () => {
     }
   };
 
-  if (loading) {
+  if (passLoadingState) {
     return (
       <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center">
         <div className="animate-spin h-12 w-12 rounded-full border-b-2 border-purple-500"></div>
