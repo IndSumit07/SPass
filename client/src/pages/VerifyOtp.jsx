@@ -5,8 +5,8 @@ import { useAuth } from "../contexts/AuthContext";
 
 const VerifyOtp = () => {
   const location = useLocation();
-  const { email, loading } = location.state || "";
-  const { verifyAccount } = useAuth();
+  const { email } = location.state || "";
+  const { verifyAccount, loading } = useAuth();
   const [enteredOtp, setEnteredOtp] = useState("");
 
   const onSubmitHandler = async (e) => {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
   X,
@@ -23,6 +23,7 @@ const Events = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [issuedPass, setIssuedPass] = useState(null);
   const [showPassPopup, setShowPassPopup] = useState(false);
+  const location = useLocation();
 
   const themeColors = {
     gold: {
@@ -89,6 +90,7 @@ const Events = () => {
 
         // Navigate to /passes instead of showing popup
         navigate("/passes");
+        location.reload();
       }
     } catch (error) {
       console.error("Error issuing pass:", error);
