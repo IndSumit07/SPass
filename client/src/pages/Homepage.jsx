@@ -242,7 +242,7 @@ const Homepage = () => {
             <span className="text-lg font-semibold text-purple-400">SPass</span>
           </div>
           <p className="text-gray-400 text-sm">
-            © 2024 SPass. Professional Event Management Platform.{" "}
+            © 2025 SPass. Developed by Sumit Kumar.{" "}
             <span className="text-purple-400">Secure • Scalable • Smart</span>
           </p>
         </div>
