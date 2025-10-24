@@ -100,9 +100,6 @@ export const AuthContext = ({ children }) => {
       if (data.success) {
         setUser(data.user);
         console.log(data.user);
-      } else {
-        navigate("/");
-        location.reload();
       }
     } catch (error) {
       toast.error(error.message);
