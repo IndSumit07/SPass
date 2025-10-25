@@ -17,6 +17,7 @@ const PassContext = ({ children }) => {
   const [passLoadingState, setPassLoadingState] = useState(false);
   const token = localStorage.getItem("token");
   const [userPasses, setUserPasses] = useState(null);
+  const [scanning, setScanning] = useState(false);
 
   const { setLoading, user } = useAuth();
 
@@ -80,11 +81,45 @@ const PassContext = ({ children }) => {
     }
   };
 
+  const scanPass = async (passId, eventId) => {
+    setPassLoadingState(true);
+    try {
+      const { data } = await axios.post(backendUrl + "/api/passes/scan", {
+        passId,
+        eventId,
+      });
+      if (data.success) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setPassLoadingState(false);
+    }
+  };
+  const startScanning = () => {
+    setScanning(true);
+  };
+
+  const stopScanning = () => {
+    setScanning(false);
+  };
+
   useEffect(() => {
     getUserPasses();
   }, []);
 
-  const value = { issuePass, userPasses, passLoadingState };
+  const value = {
+    issuePass,
+    userPasses,
+    passLoadingState,
+    scanPass,
+    startScanning,
+    stopScanning,
+    scanning,
+  };
   return (
     <PassWalaContext.Provider value={value}>
       {children}
